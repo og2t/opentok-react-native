@@ -20,24 +20,24 @@ class Utils {
             return .medium;
         }
     }
-    
+
     static func sanitizeFrameRate(_ frameRate: Any) -> OTCameraCaptureFrameRate {
         guard let cameraFrameRate = frameRate as? Int else { return OTCameraCaptureFrameRate(rawValue: 30)!; }
         return OTCameraCaptureFrameRate(rawValue: cameraFrameRate)!;
     }
-    
+
     static func sanitizeBooleanProperty(_ property: Any) -> Bool {
         guard let prop = property as? Bool else { return true; }
         return prop;
     }
-    
+
     static func getPublisherId(_ publisher: OTPublisher) -> String {
         let publisherIds = OTRN.sharedState.publishers.filter {$0.value == publisher}
         guard let publisherId = publisherIds.first else { return ""; }
         return publisherId.key;
     }
 
-    
+
     static func convertOTSubscriberVideoEventReasonToString(_ reason: OTSubscriberVideoEventReason) -> String {
         switch reason {
         case OTSubscriberVideoEventReason.publisherPropertyChanged:
@@ -46,8 +46,8 @@ class Utils {
             return "SubscriberPropertyChanged"
         case OTSubscriberVideoEventReason.qualityChanged:
             return "QualityChanged"
-        case OTSubscriberVideoEventReason.codecNotSupported:
-            return "CodecNotSupported"
+        // case OTSubscriberVideoEventReason.codecNotSupported:
+            // return "CodecNotSupported"
         }
     }
 }
