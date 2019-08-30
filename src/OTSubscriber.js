@@ -22,9 +22,12 @@ export default class OTSubscriber extends Component {
     this.otrnEventHandler = getOtrnErrorEventHandler(this.props.eventHandlers);
   }
   componentWillMount() {
-    this.streamCreated = nativeEvents.addListener(this.componentEvents.streamCreated, stream => this.streamCreatedHandler(stream));
-    this.streamDestroyed = nativeEvents.addListener(this.componentEvents.streamDestroyed, stream => this.streamDestroyedHandler(stream));
-    const subscriberEvents = sanitizeSubscriberEvents(this.props.eventHandlers);
+    const { sessionId, eventHandlers } = this.props;
+    this.streamCreated = nativeEvents.addListener(`${sessionId}:${this.componentEvents.streamCreated}`,
+      stream => this.streamCreatedHandler(stream));
+    this.streamDestroyed = nativeEvents.addListener(`${sessionId}:${this.componentEvents.streamDestroyed}`,
+      stream => this.streamDestroyedHandler(stream));
+    const subscriberEvents = sanitizeSubscriberEvents(eventHandlers);
     OT.setJSComponentEvents(this.componentEventsArray);
     setNativeEvents(subscriberEvents);
   }
@@ -54,16 +57,16 @@ export default class OTSubscriber extends Component {
     // Subscribe to streams. If subscribeToSelf is true, subscribe also to his own stream
     const sessionInfoConnectionId = sessionInfo && sessionInfo.connection ? sessionInfo.connection.connectionId : null;
     if (subscribeToSelf || (sessionInfoConnectionId !== stream.connectionId)){
-        OT.subscribeToStream(stream.streamId, subscriberProperties, (error) => {
-            if (error) {
-                this.otrnEventHandler(error);
-            } else {
-                this.setState({
-                streams: [...this.state.streams, stream.streamId],
-                });
-            }
-            });
+      OT.subscribeToStream(stream.streamId, subscriberProperties, (error) => {
+        if (error) {
+          this.otrnEventHandler(error);
+        } else {
+          this.setState({
+            streams: [...this.state.streams, stream.streamId],
+          });
         }
+      });
+    }
   }
   streamDestroyedHandler = (stream) => {
     OT.removeSubscriber(stream.streamId, (error) => {
@@ -80,8 +83,8 @@ export default class OTSubscriber extends Component {
     });
   }
   render() {
-    const containerStyle = this.props.containerStyle;
     if (!this.props.children) {
+      const containerStyle = this.props.containerStyle;
       const childrenWithStreams = this.state.streams.map((streamId) => {
         const streamProperties = this.props.streamProperties[streamId];
         const style = isEmpty(streamProperties) ? this.props.style : (isUndefined(streamProperties.style) || isNull(streamProperties.style)) ? this.props.style : streamProperties.style;
@@ -89,7 +92,7 @@ export default class OTSubscriber extends Component {
       });
       return <View style={containerStyle}>{ childrenWithStreams }</View>;
     }
-    return this.props.children(this.state.streams);
+    return this.props.children(this.state.streams) || null;
   }
 }
 
